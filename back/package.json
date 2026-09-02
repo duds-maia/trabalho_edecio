@@ -1,7 +1,7 @@
 {
-  "name": "back1",
+  "name": "mesocorre-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend da plataforma Mesocorre - conexão de clientes e prestadores de serviço",
   "main": "index.js",
   "scripts": {
     "dev": "npx tsx watch src/server.ts"
@@ -24,12 +24,10 @@
     "@prisma/client": "^7.5.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
-    "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "zod": "^4.3.6"
   }

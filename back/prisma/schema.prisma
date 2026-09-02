@@ -1,76 +1,162 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url = env("DATABASE_URL")
 }
 
-model Marca {
-  id             Int         @id @default(autoincrement())
-  nome           String      @db.VarChar(30)
-  carros         Carro[]
-  @@map("marcas")
+// ============================================
+// ENUMS
+// ============================================
+
+enum PrestadorStatus {
+  PENDENTE
+  APROVADO
+  REPROVADO
+  SUSPENSO
+  BANIDO
 }
 
-model Carro {
-  id                  Int          @id @default(autoincrement())
-  modelo              String       @db.VarChar(30)
-  ano                 Int          @db.SmallInt
-  preco               Decimal      @db.Decimal(10, 2)
-  km                  Int
-  foto                String
-  acessorios          String?
-  combustivel         Combustiveis @default(FLEX)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt()
-  destaque            Boolean      @default(true)
-  marca               Marca        @relation(fields: [marcaId], references: [id])
-  marcaId             Int
-  pontosFortes        String[]
-  pontosFracos        String[] 
-  consumoMedioCidade  Decimal?     @db.Decimal(6,2) 
-  consumoMedioEstrada Decimal?     @db.Decimal(6,2)  
-  propostas           Proposta[]
-  @@map("carros")
+enum SolicitacaoStatus {
+  PENDENTE
+  ACEITO
+  EM_ANDAMENTO
+  CONCLUIDO
+  CANCELADO
 }
+
+enum TipoAtendimento {
+  URGENCIA
+  AGENDADO
+}
+
+// ============================================
+// MODELS
+// ============================================
 
 model Cliente {
-  id            String   @db.VarChar(36) @id @default(uuid())
-  nome          String   @db.VarChar(60)
-  email         String   @db.VarChar(40) @unique
-  senha         String   @db.VarChar(60)   // senha deve ser varchar(60)
-  cidade        String   @db.VarChar(30) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt  
-  propostas     Proposta[]
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String   // hash bcrypt
+  telefone  String
+  endereco  String
+  latitude  Float
+  longitude Float
+  fotoUrl   String   // foto obrigatória
+
+  // Relacionamentos
+  solicitacoes Solicitacao[]
+  avaliacoes   Avaliacao[]
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
   @@map("clientes")
 }
 
-model Proposta {
-  id          Int       @id @default(autoincrement())
-  cliente     Cliente   @relation(fields: [clienteId], references: [id])
-  clienteId   String    @db.VarChar(36)
-  carro       Carro     @relation(fields: [carroId], references: [id])
-  carroId     Int
-  descricao   String    @db.VarChar(255)
-  resposta    String?   @db.VarChar(255)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt  
-  @@map("propostas")
+model Admin {
+  id   String @id @default(cuid())
+  nome String
+  email String @unique
+  senha String // hash bcrypt
+
+  // Relacionamentos
+  prestadores Prestador[]
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("admins")
 }
 
-enum Combustiveis {
-  FLEX
-  GASOLINA
-  ETANOL
-  DIESEL
-  ELETRICO
-  HIBRIDO
+model Categoria {
+  id          String @id @default(cuid())
+  nome        String @unique
+  descricao   String
+
+  // Relacionamentos
+  prestadores Prestador[]
+  solicitacoes Solicitacao[]
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("categorias")
+}
+
+model Prestador {
+  id            String           @id @default(cuid())
+  categoriaId   String
+  adminId       String
+  nome          String
+  email         String           @unique
+  senha         String           // hash bcrypt
+  telefone      String
+  avaliacao     Float            @default(0) // 1 a 5 estrelas
+  status        PrestadorStatus  @default(PENDENTE)
+  endereco      String
+  latitude      Float
+  longitude     Float
+  fotoUrl       String           // foto obrigatória
+  localizacaoAtualizadaEm DateTime @default(now())
+
+  // Relacionamentos
+  categoria     Categoria @relation(fields: [categoriaId], references: [id])
+  admin         Admin     @relation(fields: [adminId], references: [id])
+  solicitacoes  Solicitacao[]
+  avaliacoes    Avaliacao[]
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("prestadores")
+}
+
+model Solicitacao {
+  id              String            @id @default(cuid())
+  clienteId       String
+  prestadorId     String?
+  categoriaId     String
+  descricao       String
+  endereco        String
+  latitude        Float
+  longitude       Float
+  tipoAtendimento TipoAtendimento
+  dataAgendamento DateTime?
+  status          SolicitacaoStatus @default(PENDENTE)
+  valor           Float?            // opcional no início, preenchido quando aceito
+  fotoUrl         String            // foto obrigatória
+
+  // Relacionamentos
+  cliente         Cliente           @relation(fields: [clienteId], references: [id])
+  prestador       Prestador?        @relation(fields: [prestadorId], references: [id])
+  categoria       Categoria         @relation(fields: [categoriaId], references: [id])
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("solicitacoes")
+}
+
+model Avaliacao {
+  id          String   @id @default(cuid())
+  clienteId   String
+  prestadorId String
+  nota        Float    // 1 a 5 estrelas
+  comentario  String?
+
+  // Relacionamentos
+  cliente     Cliente   @relation(fields: [clienteId], references: [id])
+  prestador   Prestador @relation(fields: [prestadorId], references: [id])
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("avaliacoes")
 }
