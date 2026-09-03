@@ -114,28 +114,28 @@ Somente prestadores com status **APROVADO** e disponibilidade **DISPONÍVEL** en
 0.3. Apagar `services/iaServices.ts` (fica só como referência de padrão, não é reaproveitado). ✅
 0.4. Manter `package.json`, `tsconfig.json`, `prisma.config.ts` e `lib/prisma.ts`. ✅
 
-### Etapa 1 — Configuração inicial do projeto ✅ CONCLUÍDA
-1.1. Ajustar `name` e `description` no `package.json`. ✅
-1.2. Remover a dependência `jsonwebtoken` (e `@types/jsonwebtoken`, se existir) do `package.json`, já que o projeto não vai usar JWT. ✅
-1.3. Rodar `npm install` para confirmar que tudo instala sem erro. ✅
+### Etapa 1 — Configuração inicial do projeto 
+1.1. Ajustar `name` e `description` no `package.json`. 
+1.2. Remover a dependência `jsonwebtoken` (e `@types/jsonwebtoken`, se existir) do `package.json`, já que o projeto não vai usar JWT. 
+1.3. Rodar `npm install` para confirmar que tudo instala sem erro. 
 
-### Etapa 2 — Banco de dados (Neon) ✅ CONCLUÍDA
-2.1. Criar conta/projeto no Neon. ✅
-2.2. Copiar a connection string (`DATABASE_URL`). ✅
-2.3. Criar `.env` e `.env.example` com `DATABASE_URL`, `GEMINI_API_KEY`, `GOOGLE_MAPS_API_KEY`. ✅
-2.4. Confirmar que `.env` está no `.gitignore`. ✅
+### Etapa 2 — Banco de dados (Neon) 
+2.1. Criar conta/projeto no Neon. 
+2.2. Copiar a connection string (`DATABASE_URL`). 
+2.3. Criar `.env` e `.env.example` com `DATABASE_URL`, `GEMINI_API_KEY`, `GOOGLE_MAPS_API_KEY`. 
+2.4. Confirmar que `.env` está no `.gitignore`. 
 
-### Etapa 3 — Servidor mínimo ✅ CONCLUÍDA
-3.1. Recriar `src/server.ts` com Express + cors + rota raiz de teste. ✅
-3.2. Rodar `npm run dev` (ou `npx tsx watch src/server.ts`) e confirmar que o servidor sobe na porta esperada. ✅
+### Etapa 3 — Servidor mínimo 
+3.1. Recriar `src/server.ts` com Express + cors + rota raiz de teste. 
+3.2. Rodar `npm run dev` (ou `npx tsx watch src/server.ts`) e confirmar que o servidor sobe na porta esperada. 
 
-### Etapa 4 — Modelagem do banco (schema) ✅ CONCLUÍDA
-4.1. Definir o model `Cliente` no `schema.prisma`. ✅
-4.2. Definir o model `Admin`. ✅
-4.3. Definir o model `Categoria`. ✅
-4.4. Definir o enum de status do prestador (`PENDENTE`, `APROVADO`, `REPROVADO`, `SUSPENSO`, `BANIDO`). ✅
-4.5. Definir o model `Prestador` (com relação para `Categoria` e `Admin`). ✅
-4.6. Definir o model `Solicitacao` (com relações para `Cliente`, `Prestador` e `Categoria`). ✅
+### Etapa 4 — Modelagem do banco (schema) 
+4.1. Definir o model `Cliente` no `schema.prisma`. 
+4.2. Definir o model `Admin`. 
+4.3. Definir o model `Categoria`. 
+4.4. Definir o enum de status do prestador (`PENDENTE`, `APROVADO`, `REPROVADO`, `SUSPENSO`, `BANIDO`). 
+4.5. Definir o model `Prestador` (com relação para `Categoria` e `Admin`). 
+4.6. Definir o model `Solicitacao` (com relações para `Cliente`, `Prestador` e `Categoria`). 
 
 ### Etapa 5 — Migration e seed
 5.1. Rodar a primeira migration (`npx prisma migrate dev --name init`).

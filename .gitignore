@@ -3,7 +3,3 @@ node_modules
 .env
 
 /generated/prisma
-
-.env.local
-
-.docs
