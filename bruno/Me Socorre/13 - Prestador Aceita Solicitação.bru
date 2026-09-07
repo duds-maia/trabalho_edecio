@@ -1,0 +1,15 @@
+meta {
+  name: Prestador Aceita Solicitação
+  type: http
+  seq: 13
+}
+
+patch {
+  url: {{baseUrl}}/requests/{{idSolicitacao}}/provider
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenPrestador}}
+}

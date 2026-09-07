@@ -1,0 +1,11 @@
+meta {
+  name: Buscar Prestadores Próximos
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/providers/nearby?categoryId={{idCategoria}}&latitude=-23.5505&longitude=-46.6333
+  body: none
+  auth: none
+}

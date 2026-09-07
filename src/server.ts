@@ -1,22 +1,43 @@
 import express from 'express'
 import cors from 'cors'
-
-import routesMarcas from './routes/marcas'
-import routesCarros from './routes/carros'
+import rotasAdmin from './routes/admin'
+import rotasAutenticacao from './routes/autenticacao'
+import rotasAvaliacoes from './routes/avaliacoes'
+import rotasCategorias from './routes/categories'
+import rotasClientes from './routes/clientes'
+import rotasPrestadores from './routes/providers'
+import rotasSolicitacoes from './routes/solicitacoes'
+import { rotaNaoEncontrada, tratarErro } from './middlewares/erro.middleware'
 
 const app = express()
-const port = 3000
+const port = Number(process.env.PORT ?? 3000)
 
 app.use(express.json())
 app.use(cors())
 
-app.use("/marcas", routesMarcas)
-app.use("/carros", routesCarros)
+app.use('/auth', rotasAutenticacao)
+app.use('/admin', rotasAdmin)
+app.use('/reviews', rotasAvaliacoes)
+app.use('/categories', rotasCategorias)
+app.use('/clients', rotasClientes)
+app.use('/providers', rotasPrestadores)
+app.use('/requests', rotasSolicitacoes)
 
-app.get('/', (req, res) => {
-  res.send('API: Revenda de Veículos')
+app.get('/', (_req, res) => {
+  res.json({ name: 'Me Socorre API', status: 'ok' })
 })
 
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta: ${port}`)
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok' })
 })
+
+app.use(rotaNaoEncontrada)
+app.use(tratarErro)
+
+export { app }
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`)
+  })
+}

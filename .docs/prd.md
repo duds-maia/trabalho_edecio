@@ -10,7 +10,7 @@ O Mesocorre é uma plataforma que conecta clientes que precisam de um serviço d
 - Express (API REST)
 - Prisma ORM (adapter-pg)
 - PostgreSQL hospedado no Neon
-- **bcrypt para hash/proteção da senha** (sem JWT — sem sistema de sessão via token de autenticação)
+- **bcrypt para hash/proteção da senha** e **JWT para autenticação das requisições**
 - zod para validação
 - Google Gemini API (resumo de avaliações)
 - Google Maps API (localização/mapas)
@@ -99,12 +99,13 @@ Somente prestadores com status **APROVADO** e disponibilidade **DISPONÍVEL** en
 
 ## 5. Regras de negócio importantes
 
-1. **Proteção da senha**: a senha nunca é armazenada em texto puro — é protegida com hash via bcrypt (token de proteção embutido no próprio hash/salt). Não há geração de JWT nem de token de sessão separado; a validação de identidade acontece a partir do e-mail + senha em cada operação sensível.
+1. **Proteção da senha e autenticação**: a senha nunca é armazenada em texto puro — é protegida com hash via bcrypt. Após o login, a API gera um JWT contendo somente a identidade mínima do usuário (`userId` e `role`), assinado com `JWT_SECRET`. Rotas protegidas validam o token pelo cabeçalho `Authorization: Bearer <token>`.
 2. **Gemini fica exclusivamente no backend**: a chave da API nunca é exposta ao frontend. O frontend só consome `GET /providers/:id/review-summary`.
 3. **Gemini não decide matching**: a IA apenas resume avaliações; o matching é calculado pelo `matching.service.ts` com base em categoria + localização + status aprovado + disponibilidade.
 4. **Controle de custo da IA**: armazenar/reutilizar o resumo do Gemini em vez de gerar a cada acesso; atualizar apenas quando houver quantidade relevante de novas avaliações.
 5. **Prestador pendente/reprovado/suspenso/banido nunca aparece no matching.**
 6. **A `DATABASE_URL` do Neon fica só no `.env`, nunca no código nem no GitHub.**
+7 **Nossa aplicação deve possuir um codigo simples de entender e de facil manutenção**
 
 ## 6. Etapas de desenvolvimento
 
@@ -114,101 +115,102 @@ Somente prestadores com status **APROVADO** e disponibilidade **DISPONÍVEL** en
 0.3. Apagar `services/iaServices.ts` (fica só como referência de padrão, não é reaproveitado). ✅
 0.4. Manter `package.json`, `tsconfig.json`, `prisma.config.ts` e `lib/prisma.ts`. ✅
 
-### Etapa 1 — Configuração inicial do projeto 
-1.1. Ajustar `name` e `description` no `package.json`. 
-1.2. Remover a dependência `jsonwebtoken` (e `@types/jsonwebtoken`, se existir) do `package.json`, já que o projeto não vai usar JWT. 
-1.3. Rodar `npm install` para confirmar que tudo instala sem erro. 
+### Etapa 1 — Configuração inicial do projeto ✅ CONCLUÍDA
+1.1. Ajustar `name` e `description` no `package.json`. ✅
+1.2. Garantir as dependências `jsonwebtoken`, `@types/jsonwebtoken`, `bcrypt` e `zod` no `package.json`. ✅
+1.3. Rodar `npm install` para confirmar que tudo instala sem erro. ✅
 
-### Etapa 2 — Banco de dados (Neon) 
+### Etapa 2 — Banco de dados (Neon) ⏳ EM ANDAMENTO
 2.1. Criar conta/projeto no Neon. 
-2.2. Copiar a connection string (`DATABASE_URL`). 
-2.3. Criar `.env` e `.env.example` com `DATABASE_URL`, `GEMINI_API_KEY`, `GOOGLE_MAPS_API_KEY`. 
-2.4. Confirmar que `.env` está no `.gitignore`. 
+2.2. Copiar a connection string (`DATABASE_URL`). ✅
+2.3. Criar `.env` e `.env.example` com `DATABASE_URL`, `GEMINI_API_KEY`, `GOOGLE_MAPS_API_KEY`. ✅ (`.env.example` criado; chaves opcionais ainda não foram preenchidas no `.env`)
+2.4. Confirmar que `.env` está no `.gitignore`. ✅
 
-### Etapa 3 — Servidor mínimo 
-3.1. Recriar `src/server.ts` com Express + cors + rota raiz de teste. 
+### Etapa 3 — Servidor mínimo ⏳ EM VALIDAÇÃO
+3.1. Recriar `src/server.ts` com Express + cors + rota raiz de teste. ✅
 3.2. Rodar `npm run dev` (ou `npx tsx watch src/server.ts`) e confirmar que o servidor sobe na porta esperada. 
 
-### Etapa 4 — Modelagem do banco (schema) 
-4.1. Definir o model `Cliente` no `schema.prisma`. 
-4.2. Definir o model `Admin`. 
-4.3. Definir o model `Categoria`. 
-4.4. Definir o enum de status do prestador (`PENDENTE`, `APROVADO`, `REPROVADO`, `SUSPENSO`, `BANIDO`). 
-4.5. Definir o model `Prestador` (com relação para `Categoria` e `Admin`). 
-4.6. Definir o model `Solicitacao` (com relações para `Cliente`, `Prestador` e `Categoria`). 
+### Etapa 4 — Modelagem do banco (schema) ✅ CONCLUÍDA
+4.1. Definir o model `User` para clientes, prestadores e administradores. ✅
+4.2. Definir o model `ProviderProfile` vinculado ao usuário prestador. ✅
+4.3. Definir o model `Category`. ✅
+4.4. Definir os enums de aprovação, disponibilidade e status de solicitação. ✅
+4.5. Definir as relações de `ProviderProfile` com `User` e `Category`. ✅
+4.6. Definir os models `ServiceRequest` e `Review`, com seus relacionamentos. ✅
 
-### Etapa 5 — Migration e seed
-5.1. Rodar a primeira migration (`npx prisma migrate dev --name init`).
-5.2. Conferir as tabelas criadas no Neon.
-5.3. (Opcional) Criar `prisma/seed.ts` com categorias iniciais (chaveiro, encanador, eletricista, vidraceiro, ar-condicionado).
+### Etapa 5 — Migration e seed ✅ CONCLUÍDA
+5.1. Aplicar a migration `create_me_socorre` no Neon. ✅
+5.2. Conferir as tabelas criadas no Neon. ✅
+5.3. Criar `prisma/seed.ts` com categorias iniciais (chaveiro, encanador, eletricista, vidraceiro, ar-condicionado). ✅
 
-### Etapa 6 — Proteção de senha (sem JWT)
-6.1. Instalar `bcrypt` (já vem do repositório base) e `zod`.
-6.2. Criar função utilitária de hash de senha em `utils/` (ex.: `hashPassword`, `comparePassword`).
-6.3. Definir, junto com você, como cada tipo de usuário vai se manter "autenticado" nas próximas requisições sem JWT (ex.: reenviar e-mail/senha, ou outro mecanismo simples a combinar).
+### Etapa 6 — Proteção de senha e autenticação JWT ✅ CONCLUÍDA
+6.1. Instalar `bcrypt` (já vem do repositório base) e `zod`. ✅
+6.2. Criar função utilitária de hash de senha em `utils/` (ex.: `hashPassword`, `comparePassword`). ✅
+6.3. Criar serviço de geração e validação de JWT, sem armazenar senha ou dados sensíveis no payload. ✅
+6.4. Criar middleware de autenticação que lê e valida `Authorization: Bearer <token>`. ✅
 
-### Etapa 7 — Cadastro e login (cliente e prestador)
-7.1. `auth.service.ts`: função de cadastro de cliente (valida e-mail duplicado, aplica hash na senha).
-7.2. `auth.controller.ts` + `auth.routes.ts`: rota `POST /auth/client/register`.
-7.3. Repetir 7.1 e 7.2 para prestador (`POST /auth/provider/register`, status inicial `PENDENTE`).
-7.4. `POST /auth/login`: validação de e-mail + senha (comparando hash) para cliente e prestador.
+### Etapa 7 — Cadastro e login (cliente e prestador) ✅ CONCLUÍDA
+7.1. Validar e-mail duplicado e aplicar hash bcrypt no cadastro. ✅
+7.2. Criar rota `POST /auth/client/register`. ✅
+7.3. Criar rota `POST /auth/provider/register`, com status inicial `PENDING`. ✅
+7.4. Criar rota `POST /auth/login`, com validação de e-mail/senha e retorno de JWT. ✅
 
-### Etapa 8 — Login e permissões do admin
-8.1. Cadastro do admin (pode ser via seed, sem rota pública de registro).
-8.2. `POST /auth/login` cobrindo também o admin.
-8.3. `role.middleware.ts`: middleware simples para restringir rotas por tipo de usuário (cliente/prestador/admin), com base no mecanismo definido na Etapa 6.3.
+### Etapa 8 — Login e permissões do admin ✅ CONCLUÍDA
+8.1. Cadastro do admin via seed, sem rota pública de registro. ✅
+8.2. `POST /auth/login` cobrindo também o admin. ✅
+8.3. Middleware de perfil para restringir rotas por tipo de usuário, usando o perfil validado no JWT. ✅
 
-### Etapa 9 — CRUD de clientes
-9.1. `GET /clients/:id` — visualizar perfil.
-9.2. `PUT /clients/:id` — editar dados cadastrais.
+### Etapa 9 — CRUD de clientes ✅ CONCLUÍDA
+9.1. `GET /clients/:id` — visualizar perfil, protegido por JWT. ✅
+9.2. `PUT /clients/:id` — editar dados cadastrais, protegido por JWT. ✅
 
-### Etapa 10 — CRUD de categorias
-10.1. `GET /categories` — listagem pública.
-10.2. `POST /categories`, `PUT /categories/:id`, `DELETE /categories/:id` — restritos ao admin.
+### Etapa 10 — CRUD de categorias ✅ CONCLUÍDA
+10.1. `GET /categories` — listagem pública. ✅
+10.2. `POST /categories`, `PUT /categories/:id`, `DELETE /categories/:id` — restritos ao admin. ✅
 
-### Etapa 11 — Perfil e disponibilidade do prestador
-11.1. `GET /providers/:id` e `PUT /providers/:id` — visualizar/editar perfil.
-11.2. `PATCH /providers/:id/status` — atualizar disponibilidade (`DISPONÍVEL` / `INDISPONÍVEL`).
-11.3. `PATCH /providers/:id/location` — atualizar localização em tempo real.
+### Etapa 11 — Perfil e disponibilidade do prestador ✅ CONCLUÍDA
+11.1. `GET /providers/:id` e `PUT /providers/:id` — visualizar/editar perfil. ✅
+11.2. `PATCH /providers/:id/status` — atualizar disponibilidade (`disponivel: true/false`). ✅
+11.3. `PATCH /providers/:id/location` — atualizar localização em tempo real. ✅
 
-### Etapa 12 — Criação de solicitações
-12.1. `POST /requests` — cliente cria solicitação (categoria, descrição, foto, endereço, localização, tipo de atendimento).
-12.2. `GET /requests` e `GET /requests/:id` — listar/detalhar.
+### Etapa 12 — Criação de solicitações ✅ CONCLUÍDA
+12.1. `POST /requests` — cliente cria solicitação (categoria, descrição, foto, endereço, localização, tipo de atendimento). ✅
+12.2. `GET /requests` e `GET /requests/:id` — listar/detalhar conforme o perfil autenticado. ✅
 
-### Etapa 13 — Ciclo de vida da solicitação
-13.1. `PATCH /requests/:id/provider` — prestador aceita a solicitação.
-13.2. `PATCH /requests/:id/status` — iniciar/concluir atendimento.
-13.3. `PATCH /requests/:id/value` — informar valor final.
+### Etapa 13 — Ciclo de vida da solicitação ✅ CONCLUÍDA
+13.1. `PATCH /requests/:id/provider` — prestador aprovado e disponível aceita a solicitação. ✅
+13.2. `PATCH /requests/:id/status` — iniciar, concluir ou cancelar atendimento com transições validadas. ✅
+13.3. `PATCH /requests/:id/value` — prestador responsável informa valor final. ✅
 
-### Etapa 14 — Matching
-14.1. `matching.service.ts`: buscar prestadores por categoria + status `APROVADO` + disponibilidade `DISPONÍVEL`.
-14.2. Calcular distância entre prestador e local da solicitação.
-14.3. Ordenar por proximidade.
-14.4. `GET /providers/nearby` — expor o resultado do matching.
+### Etapa 14 — Matching ✅ CONCLUÍDA
+14.1. Buscar prestadores por categoria + status `APPROVED` + disponibilidade ativa. ✅
+14.2. Calcular distância entre prestador e local da solicitação. ✅
+14.3. Ordenar por proximidade. ✅
+14.4. `GET /providers/nearby` — expor o resultado do matching. ✅
 
-### Etapa 15 — Avaliações
-15.1. `POST /reviews` — cliente avalia prestador após conclusão.
-15.2. Recalcular avaliação média do prestador.
-15.3. `GET /providers/:id/reviews` — listar avaliações.
+### Etapa 15 — Avaliações ✅ CONCLUÍDA
+15.1. `POST /reviews` — cliente avalia prestador após conclusão. ✅
+15.2. Recalcular avaliação média do prestador. ✅
+15.3. `GET /providers/:id/reviews` — listar avaliações. ✅
 
-### Etapa 16 — Integração com Gemini
-16.1. `lib/gemini.ts` — configurar client do Gemini com `GEMINI_API_KEY`.
-16.2. `gemini.service.ts` — montar prompt com as avaliações, usar `responseSchema` para retorno estruturado.
-16.3. Salvar/atualizar o resumo gerado no `Prestador`.
-16.4. `GET /providers/:id/review-summary` — expor o resumo pronto.
+### Etapa 16 — Integração com Gemini ✅ CONCLUÍDA
+16.1. `lib/gemini.ts` — configurar client do Gemini com `GEMINI_API_KEY`. ✅
+16.2. `gemini.service.ts` — montar prompt com as avaliações e `responseSchema` para retorno estruturado. ✅
+16.3. Salvar/atualizar o resumo gerado no prestador, com cache por quantidade de avaliações. ✅
+16.4. `GET /providers/:id/review-summary` — expor o resumo identificado como gerado por IA. ✅
 
-### Etapa 17 — Integração com Google Maps
-17.1. `lib/maps.ts` — funções auxiliares (geocodificação/distância), se necessário além do cálculo já feito no matching.
+### Etapa 17 — Integração com Google Maps ✅ CONCLUÍDA
+17.1. `lib/maps.ts` — funções auxiliares de geocodificação e distância usadas pelo matching. ✅
 
-### Etapa 18 — Painel administrativo
-18.1. `GET /admin/providers?status=PENDENTE` — listar por status.
-18.2. `PATCH /admin/providers/:id/approve` e `.../reject`.
-18.3. `PATCH /admin/providers/:id/suspend` e `.../ban`.
-18.4. `GET /admin/reviews`, `GET /admin/requests`, `GET /admin/clients` — visão geral para o admin.
+### Etapa 18 — Painel administrativo ✅ CONCLUÍDA
+18.1. `GET /admin/providers?status=PENDING` e `GET /admin/dashboard` — listagem e indicadores por status. ✅
+18.2. `PATCH /admin/providers/:id/approve`, `.../reject` e `.../featured`. ✅
+18.3. `PATCH /admin/providers/:id/suspend` e `.../ban`. ✅
+18.4. `GET /admin/reviews`, `GET /admin/requests`, `GET /admin/clients` — visão geral para o admin. ✅
 
-### Etapa 19 — Testes das rotas
-19.1. Criar coleção no **Bruno**.
-19.2. Cobrir autenticação, clientes, categorias, prestadores, solicitações, matching, avaliações e admin.
+### Etapa 19 — Testes das rotas ✅ CONCLUÍDA
+19.1. Criar coleção no **Bruno**. ✅
+19.2. Cobrir autenticação, clientes, categorias, prestadores, solicitações, matching, avaliações e admin. ✅
 
 ## 7. Principais endpoints
 
@@ -254,4 +256,23 @@ PATCH  /admin/providers/:id/ban
 DATABASE_URL=
 GEMINI_API_KEY=
 GOOGLE_MAPS_API_KEY=
+JWT_SECRET=
 ```
+
+## 9. Alinhamento com os requisitos acadêmicos
+
+O projeto atende aos requisitos de exibição, pesquisa, login, área administrativa, dashboard, CRUD, interações, IA e deploy:
+
+- A entidade principal é o prestador de serviço, exibido em destaque, por avaliação e por proximidade.
+- A pesquisa localiza prestadores por nome, categoria e localização.
+- O administrador controla `isFeatured`, aprovação, suspensão e banimento.
+- O acesso público permite consultar categorias e prestadores; solicitar, agendar e avaliar exige login.
+- O Gemini gera no backend o “Resumo gerado por IA” das avaliações.
+- O cliente pode persistir seu `userId` no LocalStorage ao selecionar “Manter conectado”.
+- O painel administrativo terá dashboard de prestadores, solicitações, atendimentos e avaliações.
+- Status e mensagens internas atendem inicialmente à comunicação; e-mail fica como extensão, se exigido.
+- O deploy previsto inclui frontend, backend e PostgreSQL na nuvem.
+
+### Modelo relacional adotado
+
+O modelo usa cinco tabelas relacionadas: `User`, `ProviderProfile`, `Category`, `ServiceRequest` e `Review`. Pagamentos não fazem parte do MVP; `ServiceRequest.finalPrice` armazena apenas o valor final informado.

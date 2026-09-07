@@ -1,0 +1,21 @@
+meta {
+  name: Concluir Atendimento
+  type: http
+  seq: 16
+}
+
+patch {
+  url: {{baseUrl}}/requests/{{idSolicitacao}}/status
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenPrestador}}
+}
+
+body:json {
+  {
+    "status": "COMPLETED"
+  }
+}

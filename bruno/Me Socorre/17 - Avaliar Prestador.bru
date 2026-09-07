@@ -1,0 +1,23 @@
+meta {
+  name: Avaliar Prestador
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{baseUrl}}/reviews
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenCliente}}
+}
+
+body:json {
+  {
+    "idSolicitacao": {{idSolicitacao}},
+    "nota": 5,
+    "comentario": "Atendimento rápido e eficiente."
+  }
+}

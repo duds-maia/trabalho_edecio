@@ -1,0 +1,23 @@
+meta {
+  name: Cadastro Cliente
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/auth/client/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nome": "Cliente Bruno",
+    "email": "cliente.bruno@exemplo.com",
+    "senha": "senha123",
+    "telefone": "11999999999",
+    "endereco": "Rua das Flores, 100",
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  }
+}

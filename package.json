@@ -1,31 +1,44 @@
 {
-  "name": "back1",
+  "name": "me-socorre-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "API REST da plataforma Me Socorre",
   "main": "index.js",
   "scripts": {
-    "dev": "npx tsx watch src/server.ts"
+    "dev": "npx tsx watch src/server.ts",
+    "build": "prisma generate && tsc --noEmit",
+    "start": "tsx src/server.ts",
+    "db:seed": "tsx prisma/seed.ts",
+    "test:integration": "tsx scripts/testar-integracao.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.4.0",
     "@types/pg": "^8.18.0",
     "prisma": "^7.5.0",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@google/genai": "^2.21.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
+    "@types/jsonwebtoken": "^9.0.9",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.20.0",
+    "tsx": "^4.23.13",
     "zod": "^4.3.6"
   }
 }

@@ -1,0 +1,18 @@
+meta {
+  name: Login Prestador
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "prestador.bruno@exemplo.com",
+    "senha": "senha123"
+  }
+}

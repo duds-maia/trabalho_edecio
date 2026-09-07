@@ -1,0 +1,21 @@
+meta {
+  name: Atualizar Disponibilidade
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{baseUrl}}/providers/{{idPrestador}}/status
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenPrestador}}
+}
+
+body:json {
+  {
+    "disponivel": true
+  }
+}

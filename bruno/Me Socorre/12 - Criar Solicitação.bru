@@ -1,0 +1,26 @@
+meta {
+  name: Criar Solicitação
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/requests
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenCliente}}
+}
+
+body:json {
+  {
+    "idCategoria": {{idCategoria}},
+    "descricao": "Preciso de atendimento urgente para um serviço residencial.",
+    "endereco": "Rua das Flores, 100",
+    "latitude": -23.5505,
+    "longitude": -46.6333,
+    "tipoAtendimento": "IMMEDIATE"
+  }
+}
