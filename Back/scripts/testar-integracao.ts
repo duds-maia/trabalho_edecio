@@ -97,8 +97,6 @@ async function main() {
         senha: 'senha-teste-123',
         telefone: '11999999999',
         endereco: 'Rua de Teste, 100',
-        latitude: -23.5505,
-        longitude: -46.6333,
       }),
     })
     verificar(cadastroCliente.status === 201, 'Cadastro de cliente falhou.')
@@ -112,8 +110,6 @@ async function main() {
         senha: 'senha-teste-123',
         telefone: '11888888888',
         endereco: 'Avenida de Teste, 200',
-        latitude: -23.551,
-        longitude: -46.634,
         idCategoria: categoriaUsadaId,
       }),
     })
@@ -147,25 +143,20 @@ async function main() {
     })
     verificar(disponibilidade.status === 200, 'Atualização de disponibilidade falhou.')
 
-    const localizacao = await requisicao(`/providers/${idPrestador}/location`, {
-      method: 'PATCH',
-      headers: cabecalhoToken(tokenPrestador),
-      body: JSON.stringify({ latitude: -23.551, longitude: -46.634 }),
-    })
-    verificar(localizacao.status === 200, 'Atualização de localização falhou.')
-
-    const proximos = await requisicao(`/providers/nearby?categoryId=${categoriaUsadaId}&latitude=-23.5505&longitude=-46.6333`)
-    verificar(proximos.status === 200 && proximos.corpo.some((item: { id: string }) => item.id === idPrestador), 'Matching não retornou o prestador.')
+    const disponiveis = await requisicao(`/providers?categoryId=${categoriaUsadaId}`)
+    verificar(
+      disponiveis.status === 200 && disponiveis.corpo.some((item: { id: string }) => item.id === idPrestador),
+      'Listagem nao retornou o prestador disponivel.',
+    )
 
     const criacaoSolicitacao = await requisicao('/requests', {
       method: 'POST',
       headers: cabecalhoToken(tokenCliente),
       body: JSON.stringify({
         idCategoria: categoriaUsadaId,
+        idPrestador,
         descricao: 'Preciso de atendimento de teste com urgência.',
         endereco: 'Rua de Teste, 100',
-        latitude: -23.5505,
-        longitude: -46.6333,
         tipoAtendimento: 'IMMEDIATE',
       }),
     })

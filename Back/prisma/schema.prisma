@@ -14,8 +14,6 @@ model User {
   password  String
   phone     String?          @db.VarChar(30)
   address   String?
-  latitude  Decimal?         @db.Decimal(9, 6)
-  longitude Decimal?         @db.Decimal(9, 6)
   role      UserRole         @default(CLIENT)
   provider  ProviderProfile?
   requests  ServiceRequest[] @relation("ClientRequests")
@@ -44,9 +42,6 @@ model ProviderProfile {
   isAvailable          Boolean          @default(false)
   ratingAverage        Decimal          @default(0) @db.Decimal(3, 2)
   address              String?
-  latitude             Decimal?         @db.Decimal(9, 6)
-  longitude            Decimal?         @db.Decimal(9, 6)
-  locationUpdatedAt    DateTime?
   aiSummary            String?
   aiSummaryReviewCount Int              @default(0)
   user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -66,8 +61,6 @@ model ServiceRequest {
   categoryId  Int
   description String
   address     String
-  latitude    Decimal?         @db.Decimal(9, 6)
-  longitude   Decimal?         @db.Decimal(9, 6)
   serviceType ServiceType      @default(IMMEDIATE)
   scheduledAt DateTime?
   status      RequestStatus    @default(PENDING)

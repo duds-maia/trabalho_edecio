@@ -11,8 +11,6 @@ const schemaAtualizacaoCliente = z.object({
   nome: z.string().min(2, 'Nome deve ter ao menos 2 caracteres.').optional(),
   telefone: z.string().min(8).max(30).nullable().optional(),
   endereco: z.string().min(5).nullable().optional(),
-  latitude: z.coerce.number().min(-90).max(90).nullable().optional(),
-  longitude: z.coerce.number().min(-180).max(180).nullable().optional(),
 })
 
 const dadosPublicosCliente = (cliente: {
@@ -21,8 +19,6 @@ const dadosPublicosCliente = (cliente: {
   email: string
   phone: string | null
   address: string | null
-  latitude: unknown
-  longitude: unknown
   createdAt: Date
   updatedAt: Date
 }) => ({
@@ -31,8 +27,6 @@ const dadosPublicosCliente = (cliente: {
   email: cliente.email,
   telefone: cliente.phone,
   endereco: cliente.address,
-  latitude: cliente.latitude,
-  longitude: cliente.longitude,
   criadoEm: cliente.createdAt,
   atualizadoEm: cliente.updatedAt,
 })
@@ -79,8 +73,6 @@ rotas.put('/:id', requerAutenticacao, requerPerfil('CLIENT', 'ADMIN'), async (re
       ...(dados.nome !== undefined ? { name: dados.nome } : {}),
       ...(dados.telefone !== undefined ? { phone: dados.telefone } : {}),
       ...(dados.endereco !== undefined ? { address: dados.endereco } : {}),
-      ...(dados.latitude !== undefined ? { latitude: dados.latitude } : {}),
-      ...(dados.longitude !== undefined ? { longitude: dados.longitude } : {}),
     },
   })
 

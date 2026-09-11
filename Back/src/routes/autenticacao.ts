@@ -11,8 +11,6 @@ const schemaDadosUsuario = z.object({
   senha: z.string().min(8, 'Senha deve ter ao menos 8 caracteres.'),
   telefone: z.string().min(8).max(30).optional(),
   endereco: z.string().min(5).optional(),
-  latitude: z.coerce.number().min(-90).max(90).optional(),
-  longitude: z.coerce.number().min(-180).max(180).optional(),
 })
 
 const schemaCadastroPrestador = schemaDadosUsuario.extend({
@@ -40,7 +38,7 @@ rotas.post('/client/register', async (req, res) => {
   const validacao = schemaDadosUsuario.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 
-  const { nome, email, senha, telefone, endereco, latitude, longitude } = validacao.data
+  const { nome, email, senha, telefone, endereco } = validacao.data
   const emailNormalizado = email.toLowerCase()
 
   const usuarioExistente = await prisma.user.findUnique({ where: { email: emailNormalizado } })
@@ -54,8 +52,6 @@ rotas.post('/client/register', async (req, res) => {
       password: senhaProtegida,
       phone: telefone,
       address: endereco,
-      latitude,
-      longitude,
       role: 'CLIENT',
     },
   })
@@ -67,7 +63,7 @@ rotas.post('/provider/register', async (req, res) => {
   const validacao = schemaCadastroPrestador.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 
-  const { nome, email, senha, telefone, endereco, latitude, longitude, idCategoria } = validacao.data
+  const { nome, email, senha, telefone, endereco, idCategoria } = validacao.data
   const emailNormalizado = email.toLowerCase()
 
   const [usuarioExistente, categoria] = await Promise.all([
@@ -87,8 +83,6 @@ rotas.post('/provider/register', async (req, res) => {
         password: senhaProtegida,
         phone: telefone,
         address: endereco,
-        latitude,
-        longitude,
         role: 'PROVIDER',
       },
     })
@@ -98,8 +92,6 @@ rotas.post('/provider/register', async (req, res) => {
         userId: usuario.id,
         categoryId: idCategoria,
         address: endereco,
-        latitude,
-        longitude,
       },
       include: { user: true, category: true },
     })

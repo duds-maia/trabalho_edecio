@@ -10,10 +10,9 @@ const schemaIdSolicitacao = z.coerce.number().int().positive('ID de solicitaçã
 const schemaCriacaoSolicitacao = z
   .object({
     idCategoria: z.coerce.number().int().positive(),
+    idPrestador: z.string().uuid('ID de prestador inválido.'),
     descricao: z.string().min(10, 'Descrição deve ter ao menos 10 caracteres.'),
     endereco: z.string().min(5),
-    latitude: z.coerce.number().min(-90).max(90).optional(),
-    longitude: z.coerce.number().min(-180).max(180).optional(),
     tipoAtendimento: z.enum(['IMMEDIATE', 'SCHEDULED']).default('IMMEDIATE'),
     dataAgendamento: z.coerce.date().optional(),
     fotoUrl: z.string().url().optional(),
@@ -72,17 +71,26 @@ rotas.post('/', requerAutenticacao, requerPerfil('CLIENT'), async (req, res) => 
   const validacao = schemaCriacaoSolicitacao.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 
+  const prestador = await prisma.providerProfile.findFirst({
+    where: {
+      id: validacao.data.idPrestador,
+      categoryId: validacao.data.idCategoria,
+      approvalStatus: 'APPROVED',
+      isAvailable: true,
+    },
+  })
+  if (!prestador) return res.status(409).json({ error: 'Prestador indisponível ou de outra categoria.' })
+
   const categoria = await prisma.category.findUnique({ where: { id: validacao.data.idCategoria } })
   if (!categoria) return res.status(404).json({ error: 'Categoria não encontrada.' })
 
   const solicitacao = await prisma.serviceRequest.create({
     data: {
       clientId: req.autenticacao!.idUsuario,
+      providerId: prestador.id,
       categoryId: validacao.data.idCategoria,
       description: validacao.data.descricao,
       address: validacao.data.endereco,
-      latitude: validacao.data.latitude,
-      longitude: validacao.data.longitude,
       serviceType: validacao.data.tipoAtendimento,
       scheduledAt: validacao.data.dataAgendamento,
       photoUrl: validacao.data.fotoUrl,
@@ -109,13 +117,7 @@ rotas.get('/', requerAutenticacao, async (req, res) => {
       return res.status(403).json({ error: 'Prestador não aprovado.' })
     }
 
-    filtro = {
-      ...filtroStatus,
-      OR: [
-        { providerId: prestador.id },
-        { providerId: null, categoryId: prestador.categoryId, status: 'PENDING' },
-      ],
-    }
+    filtro = { providerId: prestador.id, ...filtroStatus }
   } else {
     filtro = filtroStatus
   }
@@ -148,10 +150,7 @@ rotas.get('/:id', requerAutenticacao, async (req, res) => {
     const podeVisualizar =
       prestador &&
       prestador.approvalStatus === 'APPROVED' &&
-      (solicitacao.providerId === prestador.id ||
-        (solicitacao.providerId === null &&
-          solicitacao.status === 'PENDING' &&
-          solicitacao.categoryId === prestador.categoryId))
+      solicitacao.providerId === prestador.id
 
     if (!podeVisualizar) {
       return res.status(403).json({ error: 'Você não tem permissão para acessar esta solicitação.' })
@@ -173,11 +172,10 @@ rotas.patch('/:id/provider', requerAutenticacao, requerPerfil('PROVIDER'), async
   const quantidadeAtualizada = await prisma.serviceRequest.updateMany({
     where: {
       id: validacaoId.data,
-      categoryId: prestador.categoryId,
-      providerId: null,
+      providerId: prestador.id,
       status: 'PENDING',
     },
-    data: { providerId: prestador.id, status: 'ACCEPTED' },
+    data: { status: 'ACCEPTED' },
   })
 
   if (quantidadeAtualizada.count === 0) {

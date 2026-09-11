@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../../lib/prisma'
-import { calcularDistanciaKm } from '../lib/maps'
 import { requerAutenticacao } from '../middlewares/auth.middleware'
 import { requerPerfil } from '../middlewares/perfil.middleware'
 import { obterResumoPrestador } from '../services/gemini.service'
@@ -13,23 +12,11 @@ const schemaAtualizacaoPrestador = z.object({
   nome: z.string().min(2).optional(),
   telefone: z.string().min(8).max(30).nullable().optional(),
   endereco: z.string().min(5).nullable().optional(),
-  latitude: z.coerce.number().min(-90).max(90).nullable().optional(),
-  longitude: z.coerce.number().min(-180).max(180).nullable().optional(),
   idCategoria: z.coerce.number().int().positive().optional(),
 })
 const schemaDisponibilidade = z.object({
   disponivel: z.boolean(),
 })
-const schemaLocalizacao = z.object({
-  latitude: z.coerce.number().min(-90).max(90),
-  longitude: z.coerce.number().min(-180).max(180),
-})
-const schemaBuscaProximos = z.object({
-  categoryId: z.coerce.number().int().positive(),
-  latitude: z.coerce.number().min(-90).max(90),
-  longitude: z.coerce.number().min(-180).max(180),
-})
-
 const inclusaoPublicaPrestador = {
   user: { select: { id: true, name: true, phone: true } },
   category: true,
@@ -45,6 +32,7 @@ rotas.get('/', async (req, res) => {
   const prestadores = await prisma.providerProfile.findMany({
     where: {
       approvalStatus: 'APPROVED',
+      isAvailable: true,
       ...(Number.isInteger(idCategoria) && idCategoria > 0 ? { categoryId: idCategoria } : {}),
       ...(termoBusca ? {
         OR: [
@@ -59,38 +47,6 @@ rotas.get('/', async (req, res) => {
   })
 
   res.json(prestadores)
-})
-
-rotas.get('/nearby', async (req, res) => {
-  const validacao = schemaBuscaProximos.safeParse(req.query)
-  if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
-
-  const prestadores = await prisma.providerProfile.findMany({
-    where: {
-      categoryId: validacao.data.categoryId,
-      approvalStatus: 'APPROVED',
-      isAvailable: true,
-      latitude: { not: null },
-      longitude: { not: null },
-    },
-    include: inclusaoPublicaPrestador,
-  })
-
-  const prestadoresOrdenados = prestadores
-    .map((prestador) => ({
-      ...prestador,
-      distanciaKm: Number(
-        calcularDistanciaKm(
-          validacao.data.latitude,
-          validacao.data.longitude,
-          Number(prestador.latitude),
-          Number(prestador.longitude),
-        ).toFixed(2),
-      ),
-    }))
-    .sort((primeiro, segundo) => primeiro.distanciaKm - segundo.distanciaKm)
-
-  res.json(prestadoresOrdenados)
 })
 
 rotas.get('/:id/reviews', async (req, res) => {
@@ -180,8 +136,6 @@ rotas.put('/:id', requerAutenticacao, requerPerfil('PROVIDER', 'ADMIN'), async (
       where: { id: prestadorExistente.id },
       data: {
         ...(dados.endereco !== undefined ? { address: dados.endereco } : {}),
-        ...(dados.latitude !== undefined ? { latitude: dados.latitude } : {}),
-        ...(dados.longitude !== undefined ? { longitude: dados.longitude } : {}),
         ...(dados.idCategoria !== undefined ? { categoryId: dados.idCategoria } : {}),
       },
       include: inclusaoPublicaPrestador,
@@ -212,27 +166,6 @@ rotas.patch('/:id/status', requerAutenticacao, requerPerfil('PROVIDER', 'ADMIN')
   const prestadorAtualizado = await prisma.providerProfile.update({
     where: { id: prestador.id },
     data: { isAvailable: validacaoDados.data.disponivel },
-  })
-  res.json(prestadorAtualizado)
-})
-
-rotas.patch('/:id/location', requerAutenticacao, requerPerfil('PROVIDER', 'ADMIN'), async (req, res) => {
-  const validacaoId = schemaIdPrestador.safeParse(req.params.id)
-  if (!validacaoId.success) return res.status(400).json({ error: validacaoId.error.flatten() })
-
-  const validacaoDados = schemaLocalizacao.safeParse(req.body)
-  if (!validacaoDados.success) return res.status(400).json({ error: validacaoDados.error.flatten() })
-
-  const prestador = await prisma.providerProfile.findUnique({ where: { id: validacaoId.data } })
-  if (!prestador) return res.status(404).json({ error: 'Prestador não encontrado.' })
-
-  if (!validarAcessoPrestador(prestador.id, req.autenticacao!.idUsuario, req.autenticacao!.perfil, prestador.userId)) {
-    return res.status(403).json({ error: 'Você não tem permissão para atualizar a localização.' })
-  }
-
-  const prestadorAtualizado = await prisma.providerProfile.update({
-    where: { id: prestador.id },
-    data: { ...validacaoDados.data, locationUpdatedAt: new Date() },
   })
   res.json(prestadorAtualizado)
 })
