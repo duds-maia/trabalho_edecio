@@ -8,27 +8,27 @@
     "build": "prisma generate && tsc --noEmit",
     "start": "tsx src/server.ts",
     "db:seed": "tsx prisma/seed.ts",
-    "test:integration": "tsx scripts/testar-integracao.ts"
+    "test:integration": "tsx tests/integracao.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "^20.19 || ^22.12 || >=24.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.4.0",
     "@types/pg": "^8.18.0",
-    "prisma": "^7.5.0",
+    "prisma": "^7.10.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@google/genai": "^2.21.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@prisma/adapter-pg": "^7.5.0",
-    "@prisma/client": "^7.5.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9.0.9",
@@ -36,6 +36,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.20.0",
     "tsx": "^4.23.13",

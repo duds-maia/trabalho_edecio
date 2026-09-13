@@ -20,6 +20,7 @@ model User {
   reviews   Review[]         @relation("ClientReviews")
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+
   @@map("users")
 }
 
@@ -30,6 +31,7 @@ model Category {
   providers   ProviderProfile[]
   requests    ServiceRequest[]
   createdAt   DateTime          @default(now())
+
   @@map("categories")
 }
 
@@ -37,7 +39,7 @@ model ProviderProfile {
   id                   String           @id @default(uuid()) @db.VarChar(36)
   userId               String           @unique @db.VarChar(36)
   categoryId           Int
-  approvalStatus       ApprovalStatus    @default(PENDING)
+  approvalStatus       ApprovalStatus   @default(PENDING)
   isFeatured           Boolean          @default(false)
   isAvailable          Boolean          @default(false)
   ratingAverage        Decimal          @default(0) @db.Decimal(3, 2)
@@ -50,6 +52,7 @@ model ProviderProfile {
   reviews              Review[]
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
+
   @@index([categoryId, approvalStatus, isAvailable])
   @@map("provider_profiles")
 }
@@ -72,6 +75,7 @@ model ServiceRequest {
   review      Review?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+
   @@index([clientId, status])
   @@index([providerId, status])
   @@map("service_requests")
@@ -80,14 +84,15 @@ model ServiceRequest {
 model Review {
   id         Int             @id @default(autoincrement())
   requestId  Int             @unique
-  clientId   String           @db.VarChar(36)
-  providerId String           @db.VarChar(36)
+  clientId   String          @db.VarChar(36)
+  providerId String          @db.VarChar(36)
   rating     Int
   comment    String?
   request    ServiceRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   client     User            @relation("ClientReviews", fields: [clientId], references: [id])
   provider   ProviderProfile @relation(fields: [providerId], references: [id])
   createdAt  DateTime        @default(now())
+
   @@index([providerId])
   @@map("reviews")
 }

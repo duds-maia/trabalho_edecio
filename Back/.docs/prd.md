@@ -21,7 +21,7 @@ O Me Socorre é uma plataforma que conecta clientes que precisam de um serviço 
 - **bcrypt para hash/proteção da senha** e **JWT para autenticação das requisições**
 - zod para validação
 - Google Gemini API (resumo de avaliações)
-- Testes de rota feitos com **Bruno**
+- Testes automatizados de integração executados contra a API
 
 ## 3. Estrutura de pastas
 
@@ -215,7 +215,7 @@ Somente prestadores com status **APROVADO** e disponibilidade **DISPONÍVEL** ap
 18.4. `GET /admin/reviews`, `GET /admin/requests`, `GET /admin/clients` — visão geral para o admin. ✅
 
 ### Etapa 19 — Testes das rotas ✅ CONCLUÍDA
-19.1. Criar coleção no **Bruno**. ✅
+19.1. Criar roteiro automatizado de integração. ✅
 19.2. Cobrir autenticação, clientes, categorias, prestadores disponíveis, escolha direta, solicitações, avaliações e admin. ✅
 
 ## 7. Principais endpoints

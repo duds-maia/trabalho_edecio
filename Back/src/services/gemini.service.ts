@@ -41,7 +41,12 @@ const gerarResumoAvaliacoes = async (avaliacoes: AvaliacaoParaResumo[]) => {
   return schemaRespostaGemini.parse(JSON.parse(resposta.text)).resumo
 }
 
-export const obterResumoPrestador = async (idPrestador: string) => {
+type GeradorResumo = (avaliacoes: AvaliacaoParaResumo[]) => Promise<string>
+
+export const obterResumoPrestador = async (
+  idPrestador: string,
+  gerarResumo: GeradorResumo = gerarResumoAvaliacoes,
+) => {
   const prestador = await prisma.providerProfile.findUnique({ where: { id: idPrestador } })
   if (!prestador) return null
 
@@ -67,7 +72,7 @@ export const obterResumoPrestador = async (idPrestador: string) => {
     }
   }
 
-  const resumo = await gerarResumoAvaliacoes(avaliacoes)
+  const resumo = await gerarResumo(avaliacoes)
   await prisma.providerProfile.update({
     where: { id: idPrestador },
     data: { aiSummary: resumo, aiSummaryReviewCount: avaliacoes.length },

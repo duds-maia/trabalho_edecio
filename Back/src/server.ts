@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import { rateLimit } from 'express-rate-limit'
 import rotasAdmin from './routes/admin'
 import rotasAutenticacao from './routes/autenticacao'
 import rotasAvaliacoes from './routes/avaliacoes'
@@ -12,11 +13,44 @@ import { rotaNaoEncontrada, tratarErro } from './middlewares/erro.middleware'
 
 const app = express()
 const port = Number(process.env.PORT ?? 3000)
+const origensPermitidas = (process.env.CORS_ORIGINS ?? 'http://localhost:5173,http://localhost:3000')
+  .split(',')
+  .map((origem) => origem.trim())
+  .filter(Boolean)
 
-app.use(express.json())
-app.use(cors())
+if (process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1)
+}
 
-app.use('/auth', rotasAutenticacao)
+app.use(express.json({ limit: '1mb' }))
+app.use(cors({
+  origin: (origem, permitir) => {
+    if (!origem || origensPermitidas.includes(origem)) return permitir(null, true)
+    return permitir(null, false)
+  },
+}))
+
+const limiteGeral = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  message: { error: 'Muitas requisições. Tente novamente mais tarde.' },
+})
+
+const limiteAutenticacao = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  message: { error: 'Muitas tentativas de autenticação. Tente novamente mais tarde.' },
+})
+
+app.use(limiteGeral)
+
+app.use('/auth', limiteAutenticacao, rotasAutenticacao)
 app.use('/admin', rotasAdmin)
 app.use('/reviews', rotasAvaliacoes)
 app.use('/categories', rotasCategorias)
