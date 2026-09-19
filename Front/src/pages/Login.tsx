@@ -52,7 +52,7 @@ export function Login() {
 
         <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
           <Input autoComplete="email" label="E-mail" name="email" placeholder="voce@exemplo.com" required type="email" />
-          <Input autoComplete="current-password" label="Senha" minLength={8} name="senha" placeholder="Sua senha" required type="password" />
+          <Input autoComplete="current-password" label="Senha" minLength={4} name="senha" placeholder="Sua senha" required type="password" />
           <Button className="w-full" disabled={isSubmitting} type="submit">
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </Button>

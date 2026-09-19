@@ -1,16 +1,15 @@
 import "dotenv/config";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { neonConfig } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "../generated/prisma/client";
+import ws from "ws";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL não configurada");
 
-const urlBanco = new URL(databaseUrl);
-if (urlBanco.searchParams.get("sslmode") === "require") {
-  urlBanco.searchParams.set("sslmode", "verify-full");
-}
+neonConfig.webSocketConstructor = ws;
 
-const adapter = new PrismaPg({ connectionString: urlBanco.toString() });
+const adapter = new PrismaNeon({ connectionString: databaseUrl });
 const prisma = new PrismaClient({ adapter });
 
 export { prisma };

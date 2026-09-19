@@ -35,6 +35,18 @@ const validarAcessoCliente = (idCliente: string, idUsuario: string, perfil: stri
   perfil === 'ADMIN' || idCliente === idUsuario
 
 rotas.get('/:id', requerAutenticacao, requerPerfil('CLIENT', 'ADMIN'), async (req, res) => {
+  /*
+    #swagger.tags = ['Clientes']
+    #swagger.summary = 'Consulta um cliente'
+    #swagger.description = 'Retorna o próprio perfil do cliente. Administradores podem consultar qualquer cliente.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.parameters['id'] = { in: 'path', required: true, schema: { type: 'string', format: 'uuid' }, description: 'ID do usuário cliente.' }
+    #swagger.responses[200] = { description: 'Cliente encontrado.' }
+    #swagger.responses[400] = { description: 'ID inválido.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Usuário sem permissão para consultar o cliente.' }
+    #swagger.responses[404] = { description: 'Cliente não encontrado.' }
+  */
   const validacaoId = schemaIdUsuario.safeParse(req.params.id)
   if (!validacaoId.success) return res.status(400).json({ error: validacaoId.error.flatten() })
 
@@ -51,6 +63,33 @@ rotas.get('/:id', requerAutenticacao, requerPerfil('CLIENT', 'ADMIN'), async (re
 })
 
 rotas.put('/:id', requerAutenticacao, requerPerfil('CLIENT', 'ADMIN'), async (req, res) => {
+  /*
+    #swagger.tags = ['Clientes']
+    #swagger.summary = 'Atualiza um cliente'
+    #swagger.description = 'Atualiza os dados do próprio cliente. Administradores podem atualizar qualquer cliente.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.parameters['id'] = { in: 'path', required: true, schema: { type: 'string', format: 'uuid' }, description: 'ID do usuário cliente.' }
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              nome: { type: 'string', minLength: 2, example: 'João da Silva' },
+              telefone: { type: 'string', nullable: true, minLength: 8, maxLength: 30, example: '51999999999' },
+              endereco: { type: 'string', nullable: true, minLength: 5, example: 'Rua das Flores, 100' }
+            }
+          }
+        }
+      }
+    }
+    #swagger.responses[200] = { description: 'Cliente atualizado com sucesso.' }
+    #swagger.responses[400] = { description: 'ID ou dados de atualização inválidos.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Usuário sem permissão para atualizar o cliente.' }
+    #swagger.responses[404] = { description: 'Cliente não encontrado.' }
+  */
   const validacaoId = schemaIdUsuario.safeParse(req.params.id)
   if (!validacaoId.success) return res.status(400).json({ error: validacaoId.error.flatten() })
 

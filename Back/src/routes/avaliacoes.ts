@@ -13,6 +13,34 @@ const schemaAvaliacao = z.object({
 })
 
 rotas.post('/', requerAutenticacao, requerPerfil('CLIENT'), async (req, res) => {
+  /*
+    #swagger.tags = ['Avaliações']
+    #swagger.summary = 'Avalia um atendimento'
+    #swagger.description = 'Permite que o cliente avalie uma solicitação concluída uma única vez.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['idSolicitacao', 'nota'],
+            properties: {
+              idSolicitacao: { type: 'integer', minimum: 1, example: 15 },
+              nota: { type: 'integer', minimum: 1, maximum: 5, example: 5 },
+              comentario: { type: 'string', minLength: 3, maxLength: 1000, example: 'Atendimento rápido e eficiente.' }
+            }
+          }
+        }
+      }
+    }
+    #swagger.responses[201] = { description: 'Avaliação criada com sucesso.' }
+    #swagger.responses[400] = { description: 'Dados inválidos.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Cliente sem permissão para avaliar a solicitação.' }
+    #swagger.responses[404] = { description: 'Solicitação não encontrada.' }
+    #swagger.responses[409] = { description: 'Solicitação não concluída ou já avaliada.' }
+  */
   const validacao = schemaAvaliacao.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 

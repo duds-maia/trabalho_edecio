@@ -68,6 +68,38 @@ const obterPrestadorDoUsuario = (idUsuario: string) =>
   prisma.providerProfile.findUnique({ where: { userId: idUsuario } })
 
 rotas.post('/', requerAutenticacao, requerPerfil('CLIENT'), async (req, res) => {
+  /*
+    #swagger.tags = ['Solicitações']
+    #swagger.summary = 'Cria uma solicitação de serviço'
+    #swagger.description = 'Cria uma solicitação para um prestador aprovado, disponível e pertencente à categoria informada.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['idCategoria', 'idPrestador', 'descricao', 'endereco'],
+            properties: {
+              idCategoria: { type: 'integer', minimum: 1, example: 1 },
+              idPrestador: { type: 'string', format: 'uuid', example: '6c0fce3a-510f-4ba7-a5fd-2236ed3fc08d' },
+              descricao: { type: 'string', minLength: 10, example: 'Tomada da cozinha parou de funcionar.' },
+              endereco: { type: 'string', minLength: 5, example: 'Rua das Flores, 100' },
+              tipoAtendimento: { type: 'string', enum: ['IMMEDIATE', 'SCHEDULED'], default: 'IMMEDIATE' },
+              dataAgendamento: { type: 'string', format: 'date-time', description: 'Obrigatória quando o atendimento for agendado.' },
+              fotoUrl: { type: 'string', format: 'uri', example: 'https://exemplo.com/foto.jpg' }
+            }
+          }
+        }
+      }
+    }
+    #swagger.responses[201] = { description: 'Solicitação criada com sucesso.' }
+    #swagger.responses[400] = { description: 'Dados inválidos.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Acesso permitido apenas para clientes.' }
+    #swagger.responses[404] = { description: 'Categoria não encontrada.' }
+    #swagger.responses[409] = { description: 'Prestador indisponível ou de outra categoria.' }
+  */
   const validacao = schemaCriacaoSolicitacao.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 
@@ -102,6 +134,17 @@ rotas.post('/', requerAutenticacao, requerPerfil('CLIENT'), async (req, res) => 
 })
 
 rotas.get('/', requerAutenticacao, async (req, res) => {
+  /*
+    #swagger.tags = ['Solicitações']
+    #swagger.summary = 'Lista as solicitações'
+    #swagger.description = 'Lista as solicitações visíveis ao usuário autenticado, com filtro opcional por status.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.parameters['status'] = { in: 'query', required: false, schema: { type: 'string', enum: ['PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] }, description: 'Status da solicitação.' }
+    #swagger.responses[200] = { description: 'Solicitações retornadas com sucesso.' }
+    #swagger.responses[400] = { description: 'Filtro de status inválido.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Prestador ainda não aprovado.' }
+  */
   const validacaoConsulta = schemaConsulta.safeParse(req.query)
   if (!validacaoConsulta.success) return res.status(400).json({ error: validacaoConsulta.error.flatten() })
 
@@ -131,6 +174,18 @@ rotas.get('/', requerAutenticacao, async (req, res) => {
 })
 
 rotas.get('/:id', requerAutenticacao, async (req, res) => {
+  /*
+    #swagger.tags = ['Solicitações']
+    #swagger.summary = 'Consulta uma solicitação'
+    #swagger.description = 'Retorna uma solicitação quando ela estiver acessível ao usuário autenticado.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.parameters['id'] = { in: 'path', required: true, schema: { type: 'integer', minimum: 1 }, description: 'ID da solicitação.' }
+    #swagger.responses[200] = { description: 'Solicitação encontrada.' }
+    #swagger.responses[400] = { description: 'ID inválido.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Usuário sem permissão para consultar a solicitação.' }
+    #swagger.responses[404] = { description: 'Solicitação não encontrada.' }
+  */
   const validacaoId = schemaIdSolicitacao.safeParse(req.params.id)
   if (!validacaoId.success) return res.status(400).json({ error: validacaoId.error.flatten() })
 
@@ -161,6 +216,18 @@ rotas.get('/:id', requerAutenticacao, async (req, res) => {
 })
 
 rotas.patch('/:id/provider', requerAutenticacao, requerPerfil('PROVIDER'), async (req, res) => {
+  /*
+    #swagger.tags = ['Solicitações']
+    #swagger.summary = 'Aceita uma solicitação'
+    #swagger.description = 'Permite que o prestador vinculado aceite uma solicitação pendente.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.parameters['id'] = { in: 'path', required: true, schema: { type: 'integer', minimum: 1 }, description: 'ID da solicitação.' }
+    #swagger.responses[200] = { description: 'Solicitação aceita com sucesso.' }
+    #swagger.responses[400] = { description: 'ID inválido.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Prestador não aprovado ou indisponível.' }
+    #swagger.responses[409] = { description: 'Solicitação indisponível para aceite.' }
+  */
   const validacaoId = schemaIdSolicitacao.safeParse(req.params.id)
   if (!validacaoId.success) return res.status(400).json({ error: validacaoId.error.flatten() })
 
@@ -190,6 +257,31 @@ rotas.patch('/:id/provider', requerAutenticacao, requerPerfil('PROVIDER'), async
 })
 
 rotas.patch('/:id/status', requerAutenticacao, requerPerfil('CLIENT', 'PROVIDER', 'ADMIN'), async (req, res) => {
+  /*
+    #swagger.tags = ['Solicitações']
+    #swagger.summary = 'Altera o status de uma solicitação'
+    #swagger.description = 'Altera o status conforme as transições permitidas para o perfil autenticado.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.parameters['id'] = { in: 'path', required: true, schema: { type: 'integer', minimum: 1 }, description: 'ID da solicitação.' }
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['status'],
+            properties: { status: { type: 'string', enum: ['PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'], example: 'IN_PROGRESS' } }
+          }
+        }
+      }
+    }
+    #swagger.responses[200] = { description: 'Status atualizado com sucesso.' }
+    #swagger.responses[400] = { description: 'ID ou status inválido.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Usuário sem permissão para alterar a solicitação.' }
+    #swagger.responses[404] = { description: 'Solicitação não encontrada.' }
+    #swagger.responses[409] = { description: 'Transição de status não permitida.' }
+  */
   const validacaoId = schemaIdSolicitacao.safeParse(req.params.id)
   if (!validacaoId.success) return res.status(400).json({ error: validacaoId.error.flatten() })
 
@@ -233,6 +325,30 @@ rotas.patch('/:id/status', requerAutenticacao, requerPerfil('CLIENT', 'PROVIDER'
 })
 
 rotas.patch('/:id/value', requerAutenticacao, requerPerfil('PROVIDER', 'ADMIN'), async (req, res) => {
+  /*
+    #swagger.tags = ['Solicitações']
+    #swagger.summary = 'Informa o valor final do serviço'
+    #swagger.description = 'Registra o valor final de uma solicitação em andamento ou concluída.'
+    #swagger.security = [{ "bearerAuth": [] }]
+    #swagger.parameters['id'] = { in: 'path', required: true, schema: { type: 'integer', minimum: 1 }, description: 'ID da solicitação.' }
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['valorFinal'],
+            properties: { valorFinal: { type: 'number', format: 'double', minimum: 0, exclusiveMinimum: true, example: 150.50 } }
+          }
+        }
+      }
+    }
+    #swagger.responses[200] = { description: 'Valor final atualizado com sucesso.' }
+    #swagger.responses[400] = { description: 'ID ou valor inválido.' }
+    #swagger.responses[401] = { description: 'Token não informado, inválido ou expirado.' }
+    #swagger.responses[403] = { description: 'Usuário sem permissão para informar o valor.' }
+    #swagger.responses[404] = { description: 'Solicitação não encontrada.' }
+  */
   const validacaoId = schemaIdSolicitacao.safeParse(req.params.id)
   if (!validacaoId.success) return res.status(400).json({ error: validacaoId.error.flatten() })
 

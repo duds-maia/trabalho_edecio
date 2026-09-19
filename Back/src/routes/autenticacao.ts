@@ -8,7 +8,7 @@ const rotas = Router()
 const schemaDadosUsuario = z.object({
   nome: z.string().min(2, 'Nome deve ter ao menos 2 caracteres.'),
   email: z.string().email('E-mail inválido.'),
-  senha: z.string().min(8, 'Senha deve ter ao menos 8 caracteres.'),
+  senha: z.string().min(4, 'Senha deve ter ao menos 4 caracteres.'),
   telefone: z.string().min(8).max(30).optional(),
   endereco: z.string().min(5).optional(),
 })
@@ -35,6 +35,32 @@ const dadosPublicosUsuario = (usuario: {
 })
 
 rotas.post('/client/register', async (req, res) => {
+  /*
+    #swagger.tags = ['Autenticação']
+    #swagger.summary = 'Cadastra um cliente'
+    #swagger.description = 'Cria uma conta com o perfil de cliente.'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['nome', 'email', 'senha'],
+            properties: {
+              nome: { type: 'string', minLength: 2, example: 'João da Silva' },
+              email: { type: 'string', format: 'email', example: 'joao@email.com' },
+              senha: { type: 'string', format: 'password', minLength: 4, example: '123456' },
+              telefone: { type: 'string', minLength: 8, maxLength: 30, example: '51999999999' },
+              endereco: { type: 'string', minLength: 5, example: 'Rua das Flores, 100' }
+            }
+          }
+        }
+      }
+    }
+    #swagger.responses[201] = { description: 'Cliente cadastrado com sucesso.' }
+    #swagger.responses[400] = { description: 'Dados de cadastro inválidos.' }
+    #swagger.responses[409] = { description: 'E-mail já cadastrado.' }
+  */
   const validacao = schemaDadosUsuario.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 
@@ -60,6 +86,34 @@ rotas.post('/client/register', async (req, res) => {
 })
 
 rotas.post('/provider/register', async (req, res) => {
+  /*
+    #swagger.tags = ['Autenticação']
+    #swagger.summary = 'Cadastra um prestador'
+    #swagger.description = 'Cria uma conta de prestador vinculada a uma categoria. O cadastro inicia pendente de aprovação.'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['nome', 'email', 'senha', 'idCategoria'],
+            properties: {
+              nome: { type: 'string', minLength: 2, example: 'Maria Souza' },
+              email: { type: 'string', format: 'email', example: 'maria@email.com' },
+              senha: { type: 'string', format: 'password', minLength: 4, example: '123456' },
+              telefone: { type: 'string', minLength: 8, maxLength: 30, example: '51988888888' },
+              endereco: { type: 'string', minLength: 5, example: 'Av. Central, 250' },
+              idCategoria: { type: 'integer', minimum: 1, example: 1 }
+            }
+          }
+        }
+      }
+    }
+    #swagger.responses[201] = { description: 'Prestador cadastrado com sucesso.' }
+    #swagger.responses[400] = { description: 'Dados de cadastro inválidos.' }
+    #swagger.responses[404] = { description: 'Categoria não encontrada.' }
+    #swagger.responses[409] = { description: 'E-mail já cadastrado.' }
+  */
   const validacao = schemaCadastroPrestador.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 
@@ -108,6 +162,29 @@ rotas.post('/provider/register', async (req, res) => {
 })
 
 rotas.post('/login', async (req, res) => {
+  /*
+    #swagger.tags = ['Autenticação']
+    #swagger.summary = 'Autentica um usuário'
+    #swagger.description = 'Valida as credenciais e retorna o token JWT usado nas rotas protegidas.'
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['email', 'senha'],
+            properties: {
+              email: { type: 'string', format: 'email', example: 'joao@email.com' },
+              senha: { type: 'string', format: 'password', example: '123456' }
+            }
+          }
+        }
+      }
+    }
+    #swagger.responses[200] = { description: 'Login realizado com sucesso.' }
+    #swagger.responses[400] = { description: 'Dados de login inválidos.' }
+    #swagger.responses[401] = { description: 'E-mail ou senha inválidos.' }
+  */
   const validacao = schemaLogin.safeParse(req.body)
   if (!validacao.success) return res.status(400).json({ error: validacao.error.flatten() })
 
