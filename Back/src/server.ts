@@ -1,7 +1,5 @@
 import 'dotenv/config'
 import express from 'express'
-import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "../swagger-output.json";
 import cors from 'cors'
 import { rateLimit } from 'express-rate-limit'
 import rotasAdmin from './routes/admin'
@@ -23,8 +21,6 @@ const origensPermitidas = (process.env.CORS_ORIGINS ?? 'http://localhost:5173,ht
 if (process.env.TRUST_PROXY === 'true') {
   app.set('trust proxy', 1)
 }
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument)); //swagger-ui-express
-
 app.use(express.json({ limit: '1mb' }))
 app.use(cors({
   origin: (origem, permitir) => {
@@ -62,22 +58,12 @@ app.use('/providers', rotasPrestadores)
 app.use('/requests', rotasSolicitacoes)
 
 app.get('/', (_req, res) => {
-  /*
-    #swagger.tags = ['Sistema']
-    #swagger.summary = 'Apresenta a API'
-    #swagger.description = 'Retorna o nome da API e seu estado atual.'
-    #swagger.responses[200] = { description: 'API disponível.' }
-  */
+
   res.json({ name: 'Me Socorre API', status: 'ok' })
 })
 
 app.get('/health', (_req, res) => {
-  /*
-    #swagger.tags = ['Sistema']
-    #swagger.summary = 'Verifica a disponibilidade da API'
-    #swagger.description = 'Endpoint simples para monitoramento de saúde da aplicação.'
-    #swagger.responses[200] = { description: 'API disponível.' }
-  */
+
   res.json({ status: 'ok' })
 })
 

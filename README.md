@@ -45,7 +45,6 @@ No MVP, o cliente pesquisa profissionais aprovados e disponíveis, escolhe quem 
 | Backend | Node.js, TypeScript, Express 5, Zod, JWT e bcrypt |
 | Banco de dados | PostgreSQL/Neon e Prisma 7 |
 | Inteligência artificial | Google Gemini para resumir avaliações |
-| Documentação da API | OpenAPI e Swagger UI |
 
 ## Estrutura do projeto
 
@@ -180,7 +179,6 @@ Abra `http://localhost:5173`. O Vite encaminha as chamadas de `/api` para `http:
 | Aplicação web | `http://localhost:5173` |
 | API | `http://localhost:3000` |
 | Health check | `http://localhost:3000/health` |
-| Swagger UI | `http://localhost:3000/docs` |
 
 ## Fluxo principal
 
@@ -219,8 +217,8 @@ Execute dentro de `Back/`:
 | `npm start` | Inicia a API sem o modo watch |
 | `npm run build` | Gera o Prisma Client e valida o TypeScript |
 | `npm run db:seed` | Cadastra categorias e o admin opcional |
+| `npm run db:seed:demo` | Adiciona o conjunto demonstrativo idempotente de clientes, prestadores, solicitações e avaliações |
 | `npm run test:integration` | Testa o fluxo principal e as regras críticas |
-| `npm run swagger` | Atualiza `swagger-output.json` |
 
 ### Frontend
 

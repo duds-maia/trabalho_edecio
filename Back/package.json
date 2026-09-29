@@ -8,8 +8,8 @@
     "build": "prisma generate && tsc --noEmit",
     "start": "node scripts/run-tsx.mjs src/server.ts",
     "db:seed": "node scripts/run-tsx.mjs prisma/seed.ts",
-    "test:integration": "node scripts/run-tsx.mjs tests/integracao.ts",
-    "swagger": "node scripts/run-tsx.mjs swagger.ts"
+    "db:seed:demo": "node scripts/run-tsx.mjs prisma/seed-demo.ts",
+    "test:integration": "node scripts/run-tsx.mjs tests/integracao.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,10 +21,8 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.4.0",
-    "@types/swagger-ui-express": "^4.1.8",
     "@types/ws": "^8.18.1",
     "prisma": "^7.10.0",
-    "swagger-autogen": "^2.23.7",
     "typescript": "^5.9.3"
   },
   "dependencies": {
@@ -42,7 +40,6 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.2",
-    "swagger-ui-express": "^5.0.1",
     "tsx": "^4.23.13",
     "ws": "^8.21.3",
     "zod": "^4.3.6"
