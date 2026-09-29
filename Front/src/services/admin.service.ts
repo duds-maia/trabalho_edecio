@@ -8,7 +8,7 @@ import type {
 } from '../types/entities'
 import { api } from './api'
 
-type ProviderAction = 'approve' | 'reject' | 'suspend' | 'ban'
+export type ProviderAction = 'approve' | 'reject' | 'suspend' | 'ban'
 
 export const adminService = {
   getDashboard: () => api.get<AdminDashboardData>('/admin/dashboard'),

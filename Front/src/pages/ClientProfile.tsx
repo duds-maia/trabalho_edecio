@@ -8,7 +8,7 @@ import { clientService } from '../services/client.service'
 import type { ClientProfile as ClientProfileData } from '../types/entities'
 
 export function ClientProfile() {
-  const { session, updateUser } = useAuth()
+  const { session, updateUserName } = useAuth()
   const [profile, setProfile] = useState<ClientProfileData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,7 +37,7 @@ export function ClientProfile() {
         endereco: String(form.get('endereco')).trim() || null,
       })
       setProfile(response.cliente)
-      updateUser({ nome: response.cliente.nome })
+      updateUserName(response.cliente.nome)
       setSuccess('Perfil atualizado com sucesso.')
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Não foi possível atualizar seu perfil.')

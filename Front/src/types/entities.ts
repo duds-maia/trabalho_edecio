@@ -49,6 +49,8 @@ export interface Provider {
   isAvailable: boolean
   ratingAverage: number | string
   address: string | null
+  aiSummary?: string | null
+  createdAt?: string
   user: {
     id: string
     name: string
@@ -98,6 +100,7 @@ export interface ServiceRequest {
   }
   provider: Provider | null
   category: Category
+  review?: { id: number } | null
 }
 
 export interface AuthSession {

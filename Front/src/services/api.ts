@@ -2,6 +2,10 @@ const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
 const SESSION_KEY = 'me-socorre:session'
 const SESSION_EXPIRED_EVENT = 'me-socorre:session-expired'
 
+// Este projeto sempre usa o backend real. A flag existe apenas para que o
+// layout oficial possa ocultar os avisos e atalhos da versão demonstrativa.
+export const isMockMode = false
+
 const statusMessages: Record<number, string> = {
   400: 'Confira os dados informados e tente novamente.',
   401: 'Sua sessão expirou. Entre novamente.',

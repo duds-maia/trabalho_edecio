@@ -9,7 +9,7 @@ import { providerService } from '../services/provider.service'
 import type { ApprovalStatus, Category, Provider } from '../types/entities'
 
 export function ProviderProfile() {
-  const { session, updateUser } = useAuth()
+  const { session, updateUserName } = useAuth()
   const providerId = session?.prestador?.id || ''
   const [provider, setProvider] = useState<Provider | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -42,7 +42,7 @@ export function ProviderProfile() {
         ...(categoryId > 0 ? { idCategoria: categoryId } : {}),
       })
       setProvider(updatedProvider)
-      updateUser({ nome: updatedProvider.user.name })
+      updateUserName(updatedProvider.user.name)
       setSuccess('Perfil atualizado com sucesso.')
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Não foi possível atualizar seu perfil.')

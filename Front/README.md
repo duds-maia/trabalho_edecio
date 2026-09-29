@@ -1,6 +1,6 @@
 # Me Socorre — Frontend
 
-Frontend do marketplace de serviços locais Me Socorre, desenvolvido com React, TypeScript, Vite, Tailwind CSS e React Router.
+Frontend do marketplace de serviços locais Me Socorre, desenvolvido com React, TypeScript, Vite, CSS Modules e React Router.
 
 O MVP possui catálogo público, autenticação e cadastro, fluxo completo de solicitações e avaliações para clientes, operação de atendimentos para prestadores e administração da plataforma.
 
@@ -14,6 +14,8 @@ npm run dev
 ```
 
 O frontend abre em `http://localhost:5173`. Durante o desenvolvimento, o Vite encaminha as chamadas de `/api` para o backend.
+
+No PowerShell com execução de scripts restrita, use `npm.cmd install` e `npm.cmd run dev`.
 
 Para usar outra API, crie um arquivo `.env` a partir de `.env.example` e altere `VITE_API_URL`.
 
@@ -39,3 +41,5 @@ Para usar outra API, crie um arquivo `.env` a partir de `.env.example` e altere 
 - Cliente: perfil, criação e acompanhamento de solicitações, cancelamento e avaliação.
 - Prestador: disponibilidade, perfil e ciclo completo do atendimento.
 - Administrador: indicadores, moderação, clientes, solicitações, avaliações e categorias.
+
+O painel que lembra um mapa é apenas ilustrativo. O backend não fornece coordenadas nem distância; a escolha do prestador é manual.

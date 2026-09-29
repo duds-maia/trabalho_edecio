@@ -8,4 +8,5 @@ export const categoryService = {
   update: (id: number, data: { name: string; description?: string }) =>
     api.put<Category>(`/categories/${id}`, data),
   delete: (id: number) => api.delete<void>(`/categories/${id}`),
+  remove: (id: number) => api.delete<void>(`/categories/${id}`),
 }

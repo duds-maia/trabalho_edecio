@@ -1,31 +1,34 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type PropsWithChildren,
-} from 'react'
-import { authService } from '../services/auth.service'
+import { useEffect, useMemo, useState, type PropsWithChildren } from 'react'
 import { SESSION_EXPIRED_EVENT, SESSION_KEY } from '../services/api'
+import { authService } from '../services/auth.service'
 import type { AuthSession } from '../types/entities'
 import { AuthContext, type AuthContextValue } from './auth-context'
 
-function getStoredSession(): AuthSession | null {
+function readStoredSession(): AuthSession | null {
   try {
-    const storedSession = localStorage.getItem(SESSION_KEY)
-    return storedSession ? (JSON.parse(storedSession) as AuthSession) : null
+    const stored = localStorage.getItem(SESSION_KEY)
+    return stored ? (JSON.parse(stored) as AuthSession) : null
   } catch {
-    localStorage.removeItem(SESSION_KEY)
     return null
   }
 }
 
+function persist(session: AuthSession | null) {
+  try {
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    else localStorage.removeItem(SESSION_KEY)
+  } catch {
+    // localStorage indisponível (ex.: navegação privada) — a sessão fica só em memória.
+  }
+}
+
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [session, setSession] = useState<AuthSession | null>(getStoredSession)
+  const [session, setSession] = useState<AuthSession | null>(readStoredSession)
 
   useEffect(() => {
-    const expireSession = () => setSession(null)
-    window.addEventListener(SESSION_EXPIRED_EVENT, expireSession)
-    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, expireSession)
+    const expire = () => setSession(null)
+    window.addEventListener(SESSION_EXPIRED_EVENT, expire)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, expire)
   }, [])
 
   const value = useMemo<AuthContextValue>(
@@ -34,23 +37,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isAuthenticated: Boolean(session?.token),
       login: async (email, senha) => {
         const newSession = await authService.login({ email, senha })
-        localStorage.setItem(SESSION_KEY, JSON.stringify(newSession))
+        persist(newSession)
         setSession(newSession)
         return newSession
       },
       logout: () => {
-        localStorage.removeItem(SESSION_KEY)
+        persist(null)
         setSession(null)
       },
-      updateUser: ({ nome }) => {
-        setSession((currentSession) => {
-          if (!currentSession) return null
-          const updatedSession = {
-            ...currentSession,
-            usuario: { ...currentSession.usuario, nome },
-          }
-          localStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession))
-          return updatedSession
+      updateUserName: (nome) => {
+        setSession((current) => {
+          if (!current) return current
+          const updated = { ...current, usuario: { ...current.usuario, nome } }
+          persist(updated)
+          return updated
         })
       },
     }),
